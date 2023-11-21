@@ -5,9 +5,7 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 
 @Slf4j
@@ -19,14 +17,25 @@ public class WebGetCLI {
 
     @ShellMethod(key = {"wget"}, value = "Return the source content of a URL.")
     public String webGetSource(
-            @ShellOption String url
+            @ShellOption(value = {"u", "url"}) String url
     ) {
         return getSourceOfUrlAsString(url);
     }
 
     @ShellMethod(key = {"wsave"}, value = "Save the source content of a URL to the file.")
-    public String webSaveSource() {
-        return null;
+    public String webSaveSource(
+            @ShellOption(value = {"u", "url"}) String url,
+            @ShellOption(value = {"f", "file"}) String file
+    ) {
+        String source = getSourceOfUrlAsString(url);
+        try (PrintWriter writer = new PrintWriter(file, "UTF-8")){
+            writer.write(source);
+        } catch (FileNotFoundException ex){
+            log.error("File \'{}\' is not found.", file);
+        } catch (UnsupportedEncodingException e) {
+            log.error("UTF-8 is not supported.");
+        }
+        return String.format("File Saved! You can see the result in %s.", file);
     }
 
     // ----------------------------------------------------
